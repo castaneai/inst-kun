@@ -7,23 +7,13 @@ ffmpeg.setFfmpegPath(ffmpegPath);
 
 const MAX_DURATION = 60;
 
-export const index = functions.https.onRequest((req, res) => {
-    res.send(`
-<h1>インスト判定くん</h1>
-<p>楽曲をアップロードすると、インスト音源かどうかを判定してくれます</p>
-<form action="upload" enctype="multipart/form-data" method="post">
-    <p><input type="file" name="upload"></p>
-    <p><label>判定する秒数（最大60秒）：<input type="text" name="duration" value="10"></label></p>
-    <button type="submit">判定する</button>
-</form>`)
-});
-
-export const upload = functions.https.onRequest((req, res: functions.Response) => {
+export const detectInst = functions.https.onRequest((req, res) => {
     const form = new formidable.IncomingForm();
     form.parse(req, (err, fields, files) => {
         const file = files['upload'];
         if (!file) {
-            res.end('upload file not found');
+            res.send('upload file not found');
+            return;
         }
         const duration = Math.min(parseInt(fields['duration']), MAX_DURATION);
         const client = new speech.SpeechClient();
@@ -37,6 +27,7 @@ export const upload = functions.https.onRequest((req, res: functions.Response) =
             interimResults: false,
         };
 
+        var isErr = false;
         var isInst = false;
         const recognizeStream = client
             .streamingRecognize(request)
@@ -53,7 +44,7 @@ export const upload = functions.https.onRequest((req, res: functions.Response) =
                 <a href="/">←戻る</a>`)
             })
             .on('end', () => {
-                if (!isInst) {
+                if (!isErr && !isInst) {
                     res.send(`<h1>インスト曲です！</h1><a href="/">←戻る</a>`)
                 }
             })
@@ -63,6 +54,15 @@ export const upload = functions.https.onRequest((req, res: functions.Response) =
             .duration(duration)
             .format('s16le')
             .audioChannels(1)
+            .on('start', cmd => console.info(cmd))
+            .on('progress', prog => console.debug('progress: ', prog.percent))
+            .on('error', (err, stdout, stderr) => {
+                isErr = true;
+                console.error('err!', err);
+                console.error('stdout', stdout);
+                console.error('stderr', stderr);
+                res.send('えりり');
+            })
             .pipe(recognizeStream, { end: true });
     });
 });

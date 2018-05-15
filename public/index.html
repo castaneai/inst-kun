@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>インスト判定くん</title>
+</head>
+
+<body>
+    <h1>インスト判定くん</h1>
+    <p>楽曲をアップロードすると、インスト音源かどうかを判定してくれます</p>
+    <form action="/detectInst" enctype="multipart/form-data" method="post">
+        <p>
+            <input type="file" name="upload">
+        </p>
+        <p>
+            <label>判定する秒数（最大60秒）：
+                <input type="text" name="duration" value="10">
+            </label>
+        </p>
+        <button type="submit">判定する</button>
+    </form>
+</body>
+
+</html>
