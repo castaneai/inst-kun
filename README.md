@@ -1,5 +1,9 @@
-# inst-kun
-inst kun
+# インスト判定くん
+楽曲をアップロードすると、インスト音源かどうかを判定してくれるwebサービス
+
+![](readme.gif)
+
+## Development
 
 ```bash
 # local development
